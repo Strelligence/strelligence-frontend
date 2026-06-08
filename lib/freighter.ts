@@ -18,26 +18,15 @@ import {
   getNetworkDetails,
   WatchWalletChanges,
 } from "@stellar/freighter-api";
+import type {
+  FreighterNetwork,
+  FreighterConnectionResult,
+  FreighterError,
+} from "@/types/wallet";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Re-export types for backward compatibility ────────────────────────────
 
-export interface FreighterNetwork {
-  network: string;         // e.g. "MAINNET" | "TESTNET"
-  networkUrl: string;      // Horizon URL
-  networkPassphrase: string;
-}
-
-export interface FreighterConnectionResult {
-  address: string;
-  network: FreighterNetwork;
-}
-
-export type FreighterError =
-  | "NOT_INSTALLED"
-  | "USER_REJECTED"
-  | "NOT_ALLOWED"
-  | "WRONG_NETWORK"
-  | "UNKNOWN";
+export type { FreighterNetwork, FreighterConnectionResult, FreighterError };
 
 // ─── Detection ───────────────────────────────────────────────────────────────
 

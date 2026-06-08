@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Activity,
   BarChart3,
@@ -15,6 +17,7 @@ import {
   Wallet,
   Zap,
 } from "lucide-react";
+import { ConnectWalletButton } from "@/components/wallet/connect-wallet-button";
 
 export default function LandingPage() {
   const problemCards = [
@@ -116,10 +119,10 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 rounded-[5px] bg-primary-container px-4 py-2 font-label-md text-label-md text-on-primary shadow-sm transition-transform active:scale-95 sm:px-6">
-            <Wallet className="size-[18px]" />
-            <span className="hidden sm:inline">Connect Wallet</span>
-          </button>
+          <ConnectWalletButton
+            variant="primary"
+            className="rounded-[5px] px-4 py-2 sm:px-6"
+          />
           <button
             aria-label="Open navigation"
             className="grid size-10 place-items-center text-on-surface md:hidden"

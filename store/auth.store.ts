@@ -13,42 +13,8 @@ import {
   isFreighterAllowed,
   getConnectedAddress,
   watchFreighterChanges,
-  FreighterNetwork,
 } from "@/lib/freighter";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export type ConnectionStatus =
-  | "idle"
-  | "checking"
-  | "connecting"
-  | "connected"
-  | "disconnected"
-  | "error";
-
-interface AuthState {
-  // Wallet data
-  address: string | null;
-  network: FreighterNetwork | null;
-
-  // JWT from backend (set after /auth/connect-wallet succeeds)
-  jwt: string | null;
-
-  // UI status
-  status: ConnectionStatus;
-  error: string | null;
-
-  // Freighter detection
-  isFreighterInstalled: boolean;
-
-  // Actions
-  checkFreighter: () => Promise<void>;
-  connect: () => Promise<void>;
-  disconnect: () => void;
-  setJwt: (token: string) => void;
-  setAddress: (address: string) => void;
-  setNetwork: (network: string) => void;
-}
+import type { ConnectionStatus, AuthState, FreighterNetwork } from "@/types/wallet";
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
