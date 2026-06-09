@@ -3,6 +3,7 @@
 import { Wallet, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useWallet } from "@/hooks/use-wallet";
 import { cn } from "@/lib/utils";
+import { STELLAR_WALLET_INSTALL_URL } from "@/lib/stellar-wallet";
 
 interface ConnectWalletButtonProps {
   /** Visual variant */
@@ -21,13 +22,12 @@ export function ConnectWalletButton({
   onConnected,
 }: ConnectWalletButtonProps) {
   const {
-    address,
     shortAddress,
     status,
     error,
     isConnected,
     isConnecting,
-    isFreighterInstalled,
+    hasStellarWallet,
     connect,
     disconnect,
   } = useWallet();
@@ -37,9 +37,9 @@ export function ConnectWalletButton({
       disconnect();
       return;
     }
-    await connect();
-    if (address && onConnected) {
-      onConnected(address);
+    const connectedAddress = await connect();
+    if (connectedAddress && onConnected) {
+      onConnected(connectedAddress);
     }
   };
 
@@ -57,17 +57,17 @@ export function ConnectWalletButton({
 
   const widthClass = fullWidth ? "w-full" : "";
 
-  // Not installed state
-  if (!isFreighterInstalled && status !== "checking" && status !== "idle") {
+  // No supported Stellar wallet detected in this browser.
+  if (!hasStellarWallet && status !== "checking" && status !== "idle") {
     return (
       <a
-        href="https://freighter.app"
+        href={STELLAR_WALLET_INSTALL_URL}
         target="_blank"
         rel="noopener noreferrer"
         className={cn(base, variants[variant], widthClass, className)}
       >
         <AlertCircle className="size-4" />
-        Install Freighter
+        Install Stellar wallet
       </a>
     );
   }

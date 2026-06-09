@@ -5,19 +5,21 @@
 
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useAuthStore } from "@/store/auth.store";
-import { watchFreighterChanges } from "@/lib/freighter";
+import { watchStellarWalletChanges } from "@/lib/stellar-wallet";
 
 export function useWallet() {
   const {
     address,
     network,
+    walletName,
+    supportedWallets,
     jwt,
     status,
     error,
-    isFreighterInstalled,
-    checkFreighter,
+    hasStellarWallet,
+    checkStellarWallets,
     connect,
     disconnect,
     setJwt,
@@ -25,16 +27,16 @@ export function useWallet() {
     setNetwork,
   } = useAuthStore();
 
-  // On mount: detect Freighter and restore session
+  // On mount: detect Stellar wallets and restore session
   useEffect(() => {
-    checkFreighter();
-  }, [checkFreighter]);
+    checkStellarWallets();
+  }, [checkStellarWallets]);
 
-  // Watch for Freighter account/network changes
+  // Watch for Stellar wallet account/network changes when supported
   useEffect(() => {
     if (status !== "connected") return;
 
-    const stop = watchFreighterChanges(
+    const stop = watchStellarWalletChanges(
       (newAddress) => setAddress(newAddress),
       (newNetwork) => setNetwork(newNetwork)
     );
@@ -54,12 +56,14 @@ export function useWallet() {
     address,
     shortAddress,
     network,
+    walletName,
+    supportedWallets,
     jwt,
     status,
     error,
     isConnected,
     isConnecting,
-    isFreighterInstalled,
+    hasStellarWallet,
     connect,
     disconnect,
     setJwt,

@@ -13,6 +13,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useWallet } from "@/hooks/use-wallet";
+import { STELLAR_WALLET_INSTALL_URL } from "@/lib/stellar-wallet";
 
 export default function ConnectPage() {
   const router = useRouter();
@@ -21,10 +22,12 @@ export default function ConnectPage() {
     error,
     isConnected,
     isConnecting,
-    isFreighterInstalled,
+    hasStellarWallet,
     shortAddress,
     connect,
   } = useWallet();
+
+  const isDetectingWallets = status === "checking" || (status === "idle" && !hasStellarWallet);
 
   // Redirect to dashboard once connected
   useEffect(() => {
@@ -49,9 +52,9 @@ export default function ConnectPage() {
     },
     {
       icon: Wallet,
-      title: "Works with Freighter",
+      title: "Works with Stellar wallets",
       description:
-        "The official Stellar browser wallet. Secure and open-source.",
+        "Connect with supported Stellar browser wallets through one secure flow.",
     },
   ];
 
@@ -98,19 +101,19 @@ export default function ConnectPage() {
             </motion.div>
           ) : (
             <motion.div key="connect" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              {/* Not installed warning */}
-              {!isFreighterInstalled && status !== "checking" && (
+              {/* No supported wallet warning */}
+              {!hasStellarWallet && !isDetectingWallets && (
                 <div className="mb-6 rounded-xl border border-error/20 bg-error-container/30 p-4">
                   <p className="text-body-sm text-on-surface">
-                    Freighter wallet extension is not installed.
+                    No supported Stellar wallet extension was found in this browser.
                   </p>
                   <a
-                    href="https://freighter.app"
+                    href={STELLAR_WALLET_INSTALL_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-2 inline-flex items-center gap-1 text-label-sm text-primary hover:underline"
                   >
-                    Install Freighter <ExternalLink className="size-3" />
+                    Install Stellar wallet <ExternalLink className="size-3" />
                   </a>
                 </div>
               )}
@@ -127,24 +130,44 @@ export default function ConnectPage() {
                 </motion.div>
               )}
 
-              {/* Connect button */}
-              <button
-                onClick={connect}
-                disabled={isConnecting}
-                className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-primary px-6 py-4 font-label-lg text-label-lg text-on-primary shadow-sm transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isConnecting ? (
-                  <>
-                    <Loader2 className="size-5 animate-spin" />
-                    Connecting to Freighter...
-                  </>
-                ) : (
-                  <>
-                    <Wallet className="size-5" />
-                    Connect Freighter Wallet
-                  </>
-                )}
-              </button>
+              {/* Connect / install button */}
+              {isDetectingWallets ? (
+                <button
+                  disabled
+                  className="flex w-full cursor-not-allowed items-center justify-center gap-2.5 rounded-xl bg-primary px-6 py-4 font-label-lg text-label-lg text-on-primary opacity-60 shadow-sm"
+                >
+                  <Loader2 className="size-5 animate-spin" />
+                  Checking wallets...
+                </button>
+              ) : hasStellarWallet ? (
+                <button
+                  onClick={connect}
+                  disabled={isConnecting}
+                  className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-primary px-6 py-4 font-label-lg text-label-lg text-on-primary shadow-sm transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isConnecting ? (
+                    <>
+                      <Loader2 className="size-5 animate-spin" />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <Wallet className="size-5" />
+                      Connect Wallet
+                    </>
+                  )}
+                </button>
+              ) : (
+                <a
+                  href={STELLAR_WALLET_INSTALL_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-primary px-6 py-4 font-label-lg text-label-lg text-on-primary shadow-sm transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  <Wallet className="size-5" />
+                  Install Stellar wallet
+                </a>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

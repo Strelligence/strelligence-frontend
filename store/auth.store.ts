@@ -8,13 +8,13 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import {
-  connectFreighter,
-  isFreighterInstalled,
-  isFreighterAllowed,
+  connectStellarWallet,
+  disconnectStellarWallet,
   getConnectedAddress,
-  watchFreighterChanges,
-} from "@/lib/freighter";
-import type { ConnectionStatus, AuthState, FreighterNetwork } from "@/types/wallet";
+  getSupportedStellarWallets,
+  hasInstalledStellarWallet,
+} from "@/lib/stellar-wallet";
+import type { AuthState } from "@/types/wallet";
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
@@ -23,57 +23,58 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       address: null,
       network: null,
+      walletName: null,
+      supportedWallets: [],
       jwt: null,
       status: "idle",
       error: null,
-      isFreighterInstalled: false,
+      hasStellarWallet: false,
 
-      /** Check if Freighter is installed and already connected */
-      checkFreighter: async () => {
+      /** Check if a supported Stellar wallet is installed and restore address */
+      checkStellarWallets: async () => {
         set({ status: "checking" });
-        const installed = await isFreighterInstalled();
-        set({ isFreighterInstalled: installed });
+        const supportedWallets = await getSupportedStellarWallets();
+        const hasWallet = await hasInstalledStellarWallet();
+        set({ hasStellarWallet: hasWallet, supportedWallets });
 
-        if (!installed) {
+        if (!hasWallet) {
           set({ status: "disconnected" });
           return;
         }
 
-        // If already allowed, restore address silently
-        const allowed = await isFreighterAllowed();
-        if (allowed) {
-          const address = await getConnectedAddress();
-          if (address) {
-            set({ address, status: "connected" });
-            return;
-          }
+        const address = await getConnectedAddress();
+        if (address) {
+          set({ address, status: "connected" });
+          return;
         }
 
         set({ status: "idle" });
       },
 
-      /** Full connect flow — opens Freighter popup */
+      /** Full connect flow — opens Stellar Wallets Kit modal */
       connect: async () => {
         set({ status: "connecting", error: null });
 
         try {
-          const result = await connectFreighter();
+          const result = await connectStellarWallet();
           set({
             address: result.address,
             network: result.network,
+            walletName: result.walletName ?? null,
             status: "connected",
             error: null,
           });
+          return result.address;
         } catch (err) {
           const errorMessages: Record<string, string> = {
             NOT_INSTALLED:
-              "Freighter wallet is not installed. Please install it from freighter.app",
+              "No supported Stellar wallet was found in this browser. Please install a Stellar wallet extension.",
             USER_REJECTED:
-              "Connection was rejected. Please approve the request in Freighter.",
+              "Connection was rejected. Please approve the request in your Stellar wallet.",
             NOT_ALLOWED:
-              "Access denied. Please allow Strelligence in Freighter settings.",
+              "Access denied. Please allow Strelligence in your Stellar wallet settings.",
             WRONG_NETWORK:
-              "Wrong network selected. Please switch to Stellar Mainnet in Freighter.",
+              "Wrong network selected. Please switch to Stellar Mainnet in your wallet.",
             UNKNOWN: "An unexpected error occurred. Please try again.",
           };
 
@@ -86,15 +87,19 @@ export const useAuthStore = create<AuthState>()(
             error: message,
             address: null,
             network: null,
+            walletName: null,
           });
+          return null;
         }
       },
 
       /** Disconnect and clear all state */
       disconnect: () => {
+        disconnectStellarWallet();
         set({
           address: null,
           network: null,
+          walletName: null,
           jwt: null,
           status: "disconnected",
           error: null,
@@ -104,7 +109,7 @@ export const useAuthStore = create<AuthState>()(
       /** Called after backend issues a JWT */
       setJwt: (token) => set({ jwt: token }),
 
-      /** Called by the Freighter watcher when address changes */
+      /** Called by the wallet watcher when address changes */
       setAddress: (address) => {
         const current = get().address;
         // If the user switched accounts, force re-auth
@@ -115,7 +120,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      /** Called by the Freighter watcher when network changes */
+      /** Called by the wallet watcher when network changes */
       setNetwork: (network) => {
         // Network change invalidates JWT
         set((state) => ({
@@ -131,6 +136,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         address: state.address,
         network: state.network,
+        walletName: state.walletName,
         jwt: state.jwt,
       }),
     }

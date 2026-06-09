@@ -5,25 +5,37 @@
  * All wallet-related types are defined here for better organization.
  */
 
-// ─── Freighter Types ──────────────────────────────────────────────────────────
+// ─── Stellar Wallet Types ────────────────────────────────────────────────────
 
-export interface FreighterNetwork {
-  network: string;         // e.g. "MAINNET" | "TESTNET"
-  networkUrl: string;      // Horizon URL
+export interface StellarNetwork {
+  network: string;         // e.g. "Public Global Stellar Network ; September 2015"
+  networkUrl?: string;     // Horizon URL, when the wallet exposes or we can infer it
   networkPassphrase: string;
 }
 
-export interface FreighterConnectionResult {
+export interface StellarConnectionResult {
   address: string;
-  network: FreighterNetwork;
+  network: StellarNetwork | null;
+  walletId?: string;
+  walletName?: string;
 }
 
-export type FreighterError =
+export type StellarWalletError =
   | "NOT_INSTALLED"
   | "USER_REJECTED"
   | "NOT_ALLOWED"
   | "WRONG_NETWORK"
   | "UNKNOWN";
+
+export interface StellarSupportedWallet {
+  id: string;
+  name: string;
+  type: string;
+  isAvailable: boolean;
+  isPlatformWrapper: boolean;
+  icon: string;
+  url: string;
+}
 
 // ─── Authentication Store Types ──────────────────────────────────────────────
 
@@ -38,7 +50,9 @@ export type ConnectionStatus =
 export interface AuthState {
   // Wallet data
   address: string | null;
-  network: FreighterNetwork | null;
+  network: StellarNetwork | null;
+  walletName: string | null;
+  supportedWallets: StellarSupportedWallet[];
 
   // JWT from backend (set after /auth/connect-wallet succeeds)
   jwt: string | null;
@@ -47,12 +61,12 @@ export interface AuthState {
   status: ConnectionStatus;
   error: string | null;
 
-  // Freighter detection
-  isFreighterInstalled: boolean;
+  // Stellar wallet detection
+  hasStellarWallet: boolean;
 
   // Actions
-  checkFreighter: () => Promise<void>;
-  connect: () => Promise<void>;
+  checkStellarWallets: () => Promise<void>;
+  connect: () => Promise<string | null>;
   disconnect: () => void;
   setJwt: (token: string) => void;
   setAddress: (address: string) => void;

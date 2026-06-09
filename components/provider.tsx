@@ -2,8 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
+import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -17,18 +16,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         },
       })
   );
-
-  const [mounted, setMounted] = useState(false);
-
-  // Initialize Zustand store hydration and check Freighter on mount
-  useEffect(() => {
-    setMounted(true);
-    // Trigger Freighter check when the app mounts (handled by useWallet hook in individual components)
-  }, []);
-
-  if (!mounted) {
-    return <>{children}</>;
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
