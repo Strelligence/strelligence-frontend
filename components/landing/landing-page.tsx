@@ -136,8 +136,8 @@ export default function LandingPage() {
         id="top"
         className="mx-auto px-margin-mobile py-12 md:px-24"
       >
-        <section className="mb-24 grid min-h-[716px] grid-cols-1 items-center gap-gutter lg:grid-cols-12">
-          <div className="space-y-8 lg:col-span-6">
+        <section className="mb-2 flex min-h-[716px] items-center gap-gutter">
+          <div className="space-y-8 lg:col-span-6 w-[40%]">
             <div className="inline-flex items-center gap-2 rounded-full bg-secondary-fixed px-3 py-1 font-label-sm text-label-sm text-on-secondary-fixed-variant">
               <span className="relative flex size-2">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
@@ -170,7 +170,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="relative lg:col-span-6">
+          <div className="relative lg:col-span-6 w-[60%]">
             <DashboardPreview />
             <div className="absolute -bottom-6 -left-6 -z-10 size-32 bg-primary-fixed opacity-20 blur-3xl" />
           </div>
@@ -462,7 +462,7 @@ export default function LandingPage() {
   );
 }
 
-function DashboardPreview() {
+function  DashboardPreview() {
   const bars = [42, 28, 52, 34, 74, 46, 58, 36, 81, 63, 45, 70, 38, 88, 56];
 
   return (
