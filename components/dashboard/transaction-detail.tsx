@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { ExternalLink, ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+  SheetContent,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Transaction } from "@/lib/api";
@@ -34,6 +34,7 @@ export function TransactionDetail({
 }: TransactionDetailProps) {
   const [showRaw, setShowRaw] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedAddr, setCopiedAddr] = useState<string | null>(null);
 
   if (!transaction) return null;
 
@@ -43,20 +44,29 @@ export function TransactionDetail({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const copyAddress = (addr: string) => {
+    navigator.clipboard.writeText(addr);
+    setCopiedAddr(addr);
+    setTimeout(() => setCopiedAddr(null), 2000);
+  };
+
   const truncateAddress = (addr: string) =>
     addr ? `${addr.slice(0, 8)}...${addr.slice(-6)}` : "N/A";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Transaction Details</DialogTitle>
-          <DialogDescription>
-            {new Date(transaction.date).toLocaleString()}
-          </DialogDescription>
-        </DialogHeader>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetHeader>
+        <SheetTitle>Transaction Details</SheetTitle>
+        <SheetClose onClick={() => onOpenChange(false)} />
+      </SheetHeader>
 
+      <SheetContent>
         <div className="space-y-4">
+          {/* Date */}
+          <p className="text-xs text-on-surface-variant">
+            {new Date(transaction.date).toLocaleString()}
+          </p>
+
           {/* Hash */}
           <div className="space-y-1">
             <p className="text-xs font-medium text-on-surface-variant">Hash</p>
@@ -98,6 +108,17 @@ export function TransactionDetail({
                 <code className="text-xs font-mono text-on-surface bg-muted rounded px-2 py-1">
                   {truncateAddress(transaction.sender)}
                 </code>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => copyAddress(transaction.sender)}
+                >
+                  {copiedAddr === transaction.sender ? (
+                    <Check className="size-3 text-green-500" />
+                  ) : (
+                    <Copy className="size-3" />
+                  )}
+                </Button>
                 <a
                   href={`https://stellar.expert/explorer/public/account/${transaction.sender}`}
                   target="_blank"
@@ -114,6 +135,17 @@ export function TransactionDetail({
                 <code className="text-xs font-mono text-on-surface bg-muted rounded px-2 py-1">
                   {truncateAddress(transaction.receiver)}
                 </code>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => copyAddress(transaction.receiver)}
+                >
+                  {copiedAddr === transaction.receiver ? (
+                    <Check className="size-3 text-green-500" />
+                  ) : (
+                    <Copy className="size-3" />
+                  )}
+                </Button>
                 <a
                   href={`https://stellar.expert/explorer/public/account/${transaction.receiver}`}
                   target="_blank"
@@ -168,7 +200,7 @@ export function TransactionDetail({
             </div>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
