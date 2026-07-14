@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed"
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "~2.3.0",
@@ -32,6 +35,7 @@
     "zustand": "~5.0.13"
   },
   "devDependencies": {
+    "@playwright/test": "~1.61.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
