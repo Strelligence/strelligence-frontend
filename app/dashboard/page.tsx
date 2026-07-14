@@ -28,29 +28,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
-
-function SkeletonCard() {
-  return (
-    <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 space-y-3">
-      <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-      <div className="h-8 w-32 animate-pulse rounded bg-muted" />
-      <div className="h-3 w-20 animate-pulse rounded bg-muted" />
-    </div>
-  );
-}
-
-function SkeletonTransactionRow() {
-  return (
-    <div className="flex items-center gap-3 py-3 border-b border-outline-variant last:border-0">
-      <div className="h-6 w-6 animate-pulse rounded-full bg-muted" />
-      <div className="flex-1 space-y-2">
-        <div className="h-3 w-20 animate-pulse rounded bg-muted" />
-        <div className="h-3 w-16 animate-pulse rounded bg-muted" />
-      </div>
-      <div className="h-4 w-16 animate-pulse rounded bg-muted" />
-    </div>
-  );
-}
+import { DashboardSkeleton } from "@/components/dashboard/skeletons/dashboard-skeleton";
 
 const TYPE_BADGE_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   income: "default",
@@ -93,17 +71,12 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Portfolio Summary */}
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {loadingSummary ? (
-          <>
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </>
-        ) : (
-          <>
+      {loadingSummary || loadingTx || loadingCashflow ? (
+        <DashboardSkeleton />
+      ) : (
+        <>
+          {/* Portfolio Summary */}
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-on-surface-variant">Total Balance</CardTitle>
@@ -161,11 +134,9 @@ export default function DashboardPage() {
                 </p>
               </CardContent>
             </Card>
-          </>
-        )}
-      </section>
+          </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Transactions */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -179,13 +150,7 @@ export default function DashboardPage() {
             </Button>
           </CardHeader>
           <CardContent>
-            {loadingTx ? (
-              <div className="space-y-0">
-                <SkeletonTransactionRow />
-                <SkeletonTransactionRow />
-                <SkeletonTransactionRow />
-              </div>
-            ) : !transactions?.length ? (
+            {!transactions?.length ? (
               <p className="py-8 text-center text-sm text-on-surface-variant">
                 No transactions yet
               </p>
@@ -236,9 +201,7 @@ export default function DashboardPage() {
             <CardTitle>Cashflow (7 Days)</CardTitle>
           </CardHeader>
           <CardContent>
-            {loadingCashflow ? (
-              <div className="h-[200px] animate-pulse rounded-lg bg-muted" />
-            ) : !cashflow?.length ? (
+            {!cashflow?.length ? (
               <p className="py-8 text-center text-sm text-on-surface-variant">
                 No cashflow data yet
               </p>
@@ -354,6 +317,8 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+        </>
+      )}
     </div>
   );
 }
