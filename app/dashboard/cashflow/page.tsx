@@ -5,8 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   TrendingUp,
   TrendingDown,
-  Wallet,
-  PiggyBank,
 } from "lucide-react";
 import { useWallet } from "@/hooks/use-wallet";
 import { fetchCashflowPeriod } from "@/lib/api";

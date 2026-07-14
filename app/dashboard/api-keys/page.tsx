@@ -7,8 +7,6 @@ import {
   Copy,
   Check,
   Trash2,
-  BarChart3,
-  Clock,
 } from "lucide-react";
 import { useWallet } from "@/hooks/use-wallet";
 import { toast } from "sonner";

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Repeat, RefreshCw } from "lucide-react";
+import { Repeat } from "lucide-react";
 import { useWallet } from "@/hooks/use-wallet";
 import { toast } from "sonner";
 import { fetchRecurringPatterns, updateRecurringPattern } from "@/lib/api";
