@@ -24,7 +24,7 @@ export function MobileNav({ onMoreClick }: MobileNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-outline-variant bg-background/95 backdrop-blur-sm lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-outline-variant bg-background/95 backdrop-blur-sm lg:hidden" aria-label="Mobile navigation">
       <div className="flex items-center justify-around py-2">
         {MOBILE_ITEMS.map(({ label, href, icon: Icon }) => {
           const isActive =
@@ -37,6 +37,8 @@ export function MobileNav({ onMoreClick }: MobileNavProps) {
             <button
               key={label}
               onClick={isMore ? onMoreClick : undefined}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={label}
               className={cn(
                 "flex flex-col items-center gap-0.5 px-3 py-1 text-xs transition-colors",
                 isActive
@@ -44,7 +46,7 @@ export function MobileNav({ onMoreClick }: MobileNavProps) {
                   : "text-on-surface-variant hover:text-on-surface"
               )}
             >
-              <Icon className="size-5" />
+              <Icon className="size-5" aria-hidden="true" />
               <span>{label}</span>
             </button>
           );

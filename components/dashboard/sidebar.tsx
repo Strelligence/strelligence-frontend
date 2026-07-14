@@ -53,7 +53,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1" aria-label="Dashboard navigation">
         {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
           const isActive = pathname === href;
           return (
@@ -61,6 +61,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               key={href}
               href={href}
               onClick={onClose}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
@@ -68,7 +69,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                   : "text-on-surface-variant hover:bg-muted hover:text-on-surface"
               )}
             >
-              <Icon className="size-4 shrink-0" />
+              <Icon className="size-4 shrink-0" aria-hidden="true" />
               {label}
             </Link>
           );

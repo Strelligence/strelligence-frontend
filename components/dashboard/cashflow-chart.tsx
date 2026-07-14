@@ -12,9 +12,9 @@ import {
   YAxis,
   Tooltip,
   Legend,
-  ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ResponsiveChart, useChartConfig } from "@/components/ui/responsive-chart";
 import type { CashflowDailyData, CashflowCategory } from "@/lib/api";
 
 const PIE_COLORS = [
@@ -29,7 +29,7 @@ const PIE_COLORS = [
 ];
 
 function ChartSkeleton({ height = 300 }: { height?: number }) {
-  return <div className={`animate-pulse rounded-lg bg-muted`} style={{ height }} />;
+  return <div className="animate-pulse rounded-lg bg-muted" style={{ height }} />;
 }
 
 function formatCurrency(value: number) {
@@ -47,6 +47,8 @@ interface AreaChartSectionProps {
 }
 
 export function CashflowAreaChart({ data, loading }: AreaChartSectionProps) {
+  const { tickFontSize, margin } = useChartConfig();
+
   if (loading) return <ChartSkeleton />;
 
   return (
@@ -55,38 +57,55 @@ export function CashflowAreaChart({ data, loading }: AreaChartSectionProps) {
         <CardTitle>Income vs Expense</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={data}>
-            <defs>
-              <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} tickFormatter={formatCurrency} />
-            <Tooltip formatter={(value: number) => formatCurrency(value)} />
-            <Legend />
-            <Area
-              type="monotone"
-              dataKey="income"
-              stroke="#22c55e"
-              fill="url(#incomeGrad)"
-              name="Income"
-            />
-            <Area
-              type="monotone"
-              dataKey="expense"
-              stroke="#ef4444"
-              fill="url(#expenseGrad)"
-              name="Expense"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        <div role="img" aria-label="Area chart showing income versus expense over time">
+          <ResponsiveChart mobileHeight={200} desktopHeight={300}>
+            <AreaChart data={data} margin={margin}>
+              <defs>
+                <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: tickFontSize }}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: tickFontSize }}
+                tickFormatter={formatCurrency}
+                width={60}
+              />
+              <Tooltip
+                formatter={(value) => formatCurrency(Number(value))}
+                contentStyle={{ fontSize: 12 }}
+              />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Area
+                type="monotone"
+                dataKey="income"
+                stroke="#22c55e"
+                fill="url(#incomeGrad)"
+                name="Income"
+              />
+              <Area
+                type="monotone"
+                dataKey="expense"
+                stroke="#ef4444"
+                fill="url(#expenseGrad)"
+                name="Expense"
+              />
+            </AreaChart>
+          </ResponsiveChart>
+        </div>
       </CardContent>
     </Card>
   );
@@ -98,6 +117,8 @@ interface BarChartSectionProps {
 }
 
 export function CashflowBarChart({ data, loading }: BarChartSectionProps) {
+  const { tickFontSize, margin } = useChartConfig();
+
   if (loading) return <ChartSkeleton />;
 
   return (
@@ -106,16 +127,33 @@ export function CashflowBarChart({ data, loading }: BarChartSectionProps) {
         <CardTitle>Daily Totals</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
-            <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} tickFormatter={formatCurrency} />
-            <Tooltip formatter={(value: number) => formatCurrency(value)} />
-            <Legend />
-            <Bar dataKey="income" fill="#22c55e" name="Income" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="expense" fill="#ef4444" name="Expense" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        <div role="img" aria-label="Bar chart showing daily income and expense totals">
+          <ResponsiveChart mobileHeight={200} desktopHeight={300}>
+            <BarChart data={data} margin={margin}>
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: tickFontSize }}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: tickFontSize }}
+                tickFormatter={formatCurrency}
+                width={60}
+              />
+              <Tooltip
+                formatter={(value) => formatCurrency(Number(value))}
+                contentStyle={{ fontSize: 12 }}
+              />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="income" fill="#22c55e" name="Income" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="expense" fill="#ef4444" name="Expense" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveChart>
+        </div>
       </CardContent>
     </Card>
   );
@@ -127,6 +165,8 @@ interface PieChartSectionProps {
 }
 
 export function CashflowPieChart({ data, loading }: PieChartSectionProps) {
+  const { isMobile } = useChartConfig();
+
   if (loading) return <ChartSkeleton height={300} />;
 
   return (
@@ -140,31 +180,39 @@ export function CashflowPieChart({ data, loading }: PieChartSectionProps) {
             No expense data available
           </p>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={data}
-                dataKey="amount"
-                nameKey="category"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                label={({ category, percentage }) =>
-                  `${category} (${percentage.toFixed(0)}%)`
-                }
-                labelLine={false}
-              >
-                {data.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={PIE_COLORS[index % PIE_COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value: number) => formatCurrency(value)} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+          <div role="img" aria-label="Pie chart showing expense breakdown by category">
+            <ResponsiveChart mobileHeight={250} desktopHeight={300}>
+              <PieChart>
+                <Pie
+                  data={data}
+                  dataKey="amount"
+                  nameKey="category"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={isMobile ? 70 : 100}
+                  label={
+                    isMobile
+                      ? false
+                      : (props: { name?: string; percent?: number }) =>
+                          `${props.name ?? ""} (${((props.percent ?? 0) * 100).toFixed(0)}%)`
+                  }
+                  labelLine={false}
+                >
+                  {data.map((_, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={PIE_COLORS[index % PIE_COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+              <Tooltip
+                formatter={(value) => formatCurrency(Number(value))}
+                contentStyle={{ fontSize: 12 }}
+              />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+              </PieChart>
+            </ResponsiveChart>
+          </div>
         )}
       </CardContent>
     </Card>
