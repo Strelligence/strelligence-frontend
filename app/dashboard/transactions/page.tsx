@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useRef, useEffect } from "react";
 import {
   ArrowUpDown,
   ArrowUp,
@@ -10,10 +9,10 @@ import {
   Filter,
   X,
   Loader2,
+  ChevronUp,
 } from "lucide-react";
 import { useWallet } from "@/hooks/use-wallet";
-import { fetchTransactions } from "@/lib/api";
-import type { Transaction, TransactionListResponse } from "@/lib/api";
+import { useInfiniteTransactions, flattenTransactions } from "@/hooks/use-infinite-transactions";
 import {
   Table,
   TableBody,
@@ -49,10 +48,19 @@ export default function TransactionsPage() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("date");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [selectedTx, setSelectedTx] = useState<null | { hash: string }>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
-  const params = {
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteTransactions({
+    address,
     type: typeFilter !== "All" ? typeFilter.toLowerCase() : undefined,
     asset: assetFilter !== "All" ? assetFilter : undefined,
     fromDate: fromDate || undefined,
@@ -60,15 +68,40 @@ export default function TransactionsPage() {
     search: search || undefined,
     sort,
     order,
-    cursor,
-    limit: 20,
-  };
-
-  const { data, isLoading, isFetching } = useQuery<TransactionListResponse>({
-    queryKey: ["transactions", address, params],
-    queryFn: () => fetchTransactions(address!, params),
-    enabled: !!address,
   });
+
+  const transactions = flattenTransactions(data);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Scroll to top visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const toggleSort = (field: string) => {
     if (sort === field) {
@@ -87,7 +120,6 @@ export default function TransactionsPage() {
     setSearch("");
     setSort("date");
     setOrder("desc");
-    setCursor(undefined);
   };
 
   const hasActiveFilters =
@@ -106,11 +138,14 @@ export default function TransactionsPage() {
     );
   }
 
+  const selectedTxData = selectedTx
+    ? transactions.find((t) => t.hash === selectedTx.hash) ?? null
+    : null;
+
   return (
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex flex-wrap items-end gap-3">
-        {/* Search */}
         <div className="flex-1 min-w-[200px]">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-on-surface-variant" />
@@ -123,7 +158,6 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        {/* Type filter */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-on-surface-variant">Type</label>
           <div className="flex gap-1">
@@ -140,7 +174,6 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        {/* Asset filter */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-on-surface-variant">Asset</label>
           <div className="flex gap-1">
@@ -158,7 +191,6 @@ export default function TransactionsPage() {
         </div>
       </div>
 
-      {/* Date range */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-1">
           <label className="text-xs font-medium text-on-surface-variant">From</label>
@@ -231,7 +263,7 @@ export default function TransactionsPage() {
                   ))}
                 </TableRow>
               ))
-            ) : !data?.transactions?.length ? (
+            ) : !transactions.length ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
                   <div className="flex flex-col items-center gap-2 text-on-surface-variant">
@@ -246,7 +278,7 @@ export default function TransactionsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              data.transactions.map((tx) => (
+              transactions.map((tx) => (
                 <TableRow
                   key={tx.hash}
                   className="cursor-pointer"
@@ -285,39 +317,39 @@ export default function TransactionsPage() {
         </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-on-surface-variant">
-          {data?.total ?? 0} transactions
-          {isFetching && !isLoading && (
-            <Loader2 className="inline ml-2 size-3 animate-spin" />
-          )}
-        </p>
-        <div className="flex gap-2">
-          {cursor && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCursor(undefined)}
-            >
-              Previous
-            </Button>
-          )}
-          {data?.cursor && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCursor(data.cursor!)}
-            >
-              Load more
-            </Button>
-          )}
-        </div>
-      </div>
+      {/* Infinite scroll sentinel */}
+      <div ref={sentinelRef} className="h-4" />
 
-      {/* Detail Modal */}
+      {/* Loading more indicator */}
+      {isFetchingNextPage && (
+        <div className="flex items-center justify-center gap-2 py-4">
+          <Loader2 className="size-4 animate-spin text-primary" />
+          <span className="text-sm text-on-surface-variant">Loading more...</span>
+        </div>
+      )}
+
+      {/* End of list */}
+      {!hasNextPage && transactions.length > 0 && !isLoading && (
+        <p className="text-center text-xs text-on-surface-variant py-4">
+          End of transactions
+        </p>
+      )}
+
+      {/* Scroll to top button */}
+      {showScrollTop && (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={scrollToTop}
+          className="fixed bottom-20 right-4 z-30 shadow-lg lg:bottom-6"
+        >
+          <ChevronUp className="size-4" />
+        </Button>
+      )}
+
+      {/* Detail Slide-over */}
       <TransactionDetail
-        transaction={selectedTx}
+        transaction={selectedTxData}
         open={!!selectedTx}
         onOpenChange={(open) => !open && setSelectedTx(null)}
       />

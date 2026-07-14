@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Copy, Check, AlertTriangle } from "lucide-react";
 import {
   Dialog,
@@ -12,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { apiKeySchema, type ApiKeyFormValues } from "@/lib/validations/api-key";
 
 interface ApiKeyDialogProps {
   open: boolean;
@@ -28,12 +31,21 @@ export function ApiKeyDialog({
   onGenerate,
   generating,
 }: ApiKeyDialogProps) {
-  const [name, setName] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const handleGenerate = () => {
-    if (!name.trim()) return;
-    onGenerate(name.trim());
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isValid },
+  } = useForm<ApiKeyFormValues>({
+    resolver: zodResolver(apiKeySchema),
+    defaultValues: { name: "" },
+    mode: "onBlur",
+  });
+
+  const onFormSubmit = (data: ApiKeyFormValues) => {
+    onGenerate(data.name.trim());
   };
 
   const handleCopy = () => {
@@ -45,7 +57,7 @@ export function ApiKeyDialog({
   };
 
   const handleClose = () => {
-    setName("");
+    reset();
     setCopied(false);
     onOpenChange(false);
   };
@@ -100,31 +112,29 @@ export function ApiKeyDialog({
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-3">
+            <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-3">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-on-surface-variant">
                   Key Name
                 </label>
                 <Input
                   placeholder="e.g. production-server"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+                  {...register("name")}
                 />
+                {errors.name && (
+                  <p className="text-xs text-destructive">{errors.name.message}</p>
+                )}
               </div>
-            </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={handleClose}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleGenerate}
-                disabled={!name.trim() || generating}
-              >
-                {generating ? "Generating..." : "Generate"}
-              </Button>
-            </DialogFooter>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={!isValid || generating}>
+                  {generating ? "Generating..." : "Generate"}
+                </Button>
+              </DialogFooter>
+            </form>
           </>
         )}
       </DialogContent>

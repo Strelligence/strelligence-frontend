@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WEBHOOK_EVENTS } from "@/lib/api";
+import { webhookSchema, type WebhookFormValues } from "@/lib/validations/webhook";
 
 interface WebhookDialogProps {
   open: boolean;
@@ -26,39 +28,35 @@ export function WebhookDialog({
   onSubmit,
   submitting,
 }: WebhookDialogProps) {
-  const [url, setUrl] = useState("");
-  const [events, setEvents] = useState<string[]>([]);
-  const [error, setError] = useState("");
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors, isValid },
+  } = useForm<WebhookFormValues>({
+    resolver: zodResolver(webhookSchema),
+    defaultValues: { url: "", events: [] },
+    mode: "onBlur",
+  });
+
+  const events = watch("events");
 
   const toggleEvent = (event: string) => {
-    setEvents((prev) =>
-      prev.includes(event) ? prev.filter((e) => e !== event) : [...prev, event]
-    );
+    const current = events;
+    const next = current.includes(event)
+      ? current.filter((e) => e !== event)
+      : [...current, event];
+    setValue("events", next, { shouldValidate: true });
   };
 
-  const handleSubmit = () => {
-    if (!url.trim()) {
-      setError("URL is required");
-      return;
-    }
-    try {
-      new URL(url);
-    } catch {
-      setError("Invalid URL format");
-      return;
-    }
-    if (events.length === 0) {
-      setError("Select at least one event");
-      return;
-    }
-    setError("");
-    onSubmit(url.trim(), events);
+  const onFormSubmit = (data: WebhookFormValues) => {
+    onSubmit(data.url.trim(), data.events);
   };
 
   const handleClose = () => {
-    setUrl("");
-    setEvents([]);
-    setError("");
+    reset();
     onOpenChange(false);
   };
 
@@ -72,19 +70,18 @@ export function WebhookDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-1">
             <label className="text-xs font-medium text-on-surface-variant">
               Webhook URL
             </label>
             <Input
               placeholder="https://your-server.com/webhook"
-              value={url}
-              onChange={(e) => {
-                setUrl(e.target.value);
-                setError("");
-              }}
+              {...register("url")}
             />
+            {errors.url && (
+              <p className="text-xs text-destructive">{errors.url.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -110,24 +107,20 @@ export function WebhookDialog({
                 </label>
               ))}
             </div>
+            {errors.events && (
+              <p className="text-xs text-destructive">{errors.events.message}</p>
+            )}
           </div>
 
-          {error && (
-            <p className="text-xs text-destructive">{error}</p>
-          )}
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
-            {submitting ? "Creating..." : "Create Webhook"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!isValid || submitting}>
+              {submitting ? "Creating..." : "Create Webhook"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
