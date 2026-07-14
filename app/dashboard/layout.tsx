@@ -6,6 +6,8 @@ import { useEffect } from "react";
 import { Menu } from "lucide-react";
 import { useWallet } from "@/hooks/use-wallet";
 import { Sidebar } from "@/components/dashboard/sidebar";
+import { MobileNav } from "@/components/dashboard/mobile-nav";
+import { MoreMenu } from "@/components/dashboard/more-menu";
 import { Button } from "@/components/ui/button";
 
 export default function DashboardLayout({
@@ -16,6 +18,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const { isConnected, isConnecting } = useWallet();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => {
     if (!isConnecting && !isConnected) {
@@ -40,7 +43,7 @@ export default function DashboardLayout({
     <div className="flex min-h-screen bg-background">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div className="flex flex-1 flex-col lg:pl-64">
+      <div className="flex flex-1 flex-col lg:pl-64 pb-16 lg:pb-0">
         <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-outline-variant bg-background/80 backdrop-blur-sm px-4 lg:px-6">
           <Button
             variant="ghost"
@@ -57,6 +60,9 @@ export default function DashboardLayout({
 
         <main className="flex-1 p-4 lg:p-6">{children}</main>
       </div>
+
+      <MobileNav onMoreClick={() => setMoreOpen(true)} />
+      <MoreMenu open={moreOpen} onClose={() => setMoreOpen(false)} />
     </div>
   );
 }
