@@ -85,7 +85,7 @@ export function CashflowAreaChart({ data, loading }: AreaChartSectionProps) {
                 width={60}
               />
               <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value) => formatCurrency(Number(value))}
                 contentStyle={{ fontSize: 12 }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -145,7 +145,7 @@ export function CashflowBarChart({ data, loading }: BarChartSectionProps) {
                 width={60}
               />
               <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value) => formatCurrency(Number(value))}
                 contentStyle={{ fontSize: 12 }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -193,8 +193,8 @@ export function CashflowPieChart({ data, loading }: PieChartSectionProps) {
                   label={
                     isMobile
                       ? false
-                      : ({ category, percentage }) =>
-                          `${category} (${percentage.toFixed(0)}%)`
+                      : (props: { name?: string; percent?: number }) =>
+                          `${props.name ?? ""} (${((props.percent ?? 0) * 100).toFixed(0)}%)`
                   }
                   labelLine={false}
                 >
@@ -205,10 +205,10 @@ export function CashflowPieChart({ data, loading }: PieChartSectionProps) {
                     />
                   ))}
                 </Pie>
-                <Tooltip
-                  formatter={(value: number) => formatCurrency(value)}
-                  contentStyle={{ fontSize: 12 }}
-                />
+              <Tooltip
+                formatter={(value) => formatCurrency(Number(value))}
+                contentStyle={{ fontSize: 12 }}
+              />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
               </PieChart>
             </ResponsiveChart>
