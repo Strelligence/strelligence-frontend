@@ -8,10 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SettingsPage() {
-  const { address, shortAddress, walletName } = useWallet();
+  const { address, walletName } = useWallet();
   const { theme, setTheme } = useTheme();
 
   const [email, setEmail] = useState("");

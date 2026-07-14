@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -19,47 +26,59 @@ function getSystemTheme(): "light" | "dark" {
     : "light";
 }
 
+function resolveTheme(theme: Theme): "light" | "dark" {
+  return theme === "system" ? getSystemTheme() : theme;
+}
+
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") return "system";
+  return (localStorage.getItem("strelligence-theme") as Theme) ?? "system";
+}
+
+function applyThemeClass(resolved: "light" | "dark") {
+  document.documentElement.classList.remove("light", "dark");
+  document.documentElement.classList.add(resolved);
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+  const [state, setState] = useState<{
+    theme: Theme;
+    resolved: "light" | "dark";
+  }>(() => {
+    const theme = getInitialTheme();
+    return { theme, resolved: resolveTheme(theme) };
+  });
 
   useEffect(() => {
-    const stored = localStorage.getItem("strelligence-theme") as Theme | null;
-    if (stored) setThemeState(stored);
-  }, []);
+    applyThemeClass(state.resolved);
+  }, [state.resolved]);
 
   useEffect(() => {
-    const resolved = theme === "system" ? getSystemTheme() : theme;
-    setResolvedTheme(resolved);
-
-    const root = document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(resolved);
-  }, [theme]);
-
-  useEffect(() => {
-    if (theme !== "system") return;
+    if (state.theme !== "system") return;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const handler = () => {
-      const resolved = mq.matches ? "dark" : "light";
-      setResolvedTheme(resolved);
-      const root = document.documentElement;
-      root.classList.remove("light", "dark");
-      root.classList.add(resolved);
+      const r = mq.matches ? "dark" : "light";
+      applyThemeClass(r);
+      setState((prev) => ({ ...prev, resolved: r }));
     };
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
-  }, [theme]);
+  }, [state.theme]);
 
-  const setTheme = (t: Theme) => {
-    setThemeState(t);
-    localStorage.setItem("strelligence-theme", t);
-  };
+  const setTheme = useCallback((theme: Theme) => {
+    localStorage.setItem("strelligence-theme", theme);
+    const resolved = resolveTheme(theme);
+    applyThemeClass(resolved);
+    setState({ theme, resolved });
+  }, []);
+
+  const value = useMemo(
+    () => ({ theme: state.theme, setTheme, resolvedTheme: state.resolved }),
+    [state.theme, state.resolved, setTheme]
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 }
 
