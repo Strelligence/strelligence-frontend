@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 
 export default function ErrorPage({
   error,
-  reset,
+  unstable_retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  unstable_retry: () => void;
 }) {
   useEffect(() => {
     console.error(error);
@@ -28,7 +28,7 @@ export default function ErrorPage({
         {error.message ?? "An unexpected error occurred. Please try again."}
       </p>
       <div className="flex gap-3">
-        <Button variant="outline" onClick={reset} className="gap-1.5">
+        <Button variant="outline" onClick={() => unstable_retry()} className="gap-1.5">
           <RefreshCw className="size-4" />
           Try Again
         </Button>
