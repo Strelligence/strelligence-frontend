@@ -32,17 +32,46 @@
   --radius: 0.625rem;
 }
 
+.dark {
+  --background: #1a1c1d;
+  --foreground: #e3e2e4;
+  --card: #222324;
+  --card-foreground: #e3e2e4;
+  --popover: #222324;
+  --popover-foreground: #e3e2e4;
+  --primary: #ffb0d8;
+  --primary-foreground: #3c002a;
+  --secondary: #ffb0d8;
+  --secondary-foreground: #3c002a;
+  --muted: #39393b;
+  --muted-foreground: #c1c1c3;
+  --accent: #5a3950;
+  --accent-foreground: #ffd8e8;
+  --destructive: #ffb4ab;
+  --border: #504348;
+  --input: #504348;
+  --ring: #ffb0d8;
+  --chart-1: #ffb0d8;
+  --chart-2: #ffb0d8;
+  --chart-3: #ff99ce;
+  --chart-4: #ffaed9;
+  --chart-5: #d98eb3;
+}
+
 @layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply overflow-x-hidden bg-background text-on-surface antialiased;
+    @apply overflow-x-hidden antialiased;
+    background-color: var(--background);
+    color: var(--foreground);
   }
 
   html {
-    @apply scroll-smooth bg-background font-sans;
+    @apply scroll-smooth font-sans;
+    background-color: var(--background);
   }
 
   ::selection {
@@ -55,6 +84,11 @@
     background: rgb(255 255 255 / 70%);
     backdrop-filter: blur(12px);
     border: 1px solid rgb(229 231 235 / 50%);
+  }
+
+  .dark .glass-card {
+    background: rgb(34 35 36 / 70%);
+    border: 1px solid rgb(80 67 72 / 50%);
   }
 
   .code-block {
