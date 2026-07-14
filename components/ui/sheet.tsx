@@ -46,6 +46,7 @@ export function Sheet({
             exit={{ opacity: 0 }}
             onClick={() => onOpenChange(false)}
             className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+            aria-hidden="true"
           />
           <motion.div
             ref={ref}
@@ -53,6 +54,8 @@ export function Sheet({
             animate={{ x: 0 }}
             exit={{ x: side === "right" ? "100%" : "-100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            role="dialog"
+            aria-modal="true"
             className={cn(
               "fixed inset-y-0 z-50 flex w-full max-w-lg flex-col bg-background shadow-xl",
               side === "right" ? "right-0" : "left-0",
