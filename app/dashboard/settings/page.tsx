@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useWallet } from "@/hooks/use-wallet";
@@ -21,7 +20,7 @@ export default function SettingsPage() {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isDirty },
   } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
@@ -44,7 +43,7 @@ export default function SettingsPage() {
   const currency = watch("currency");
   const dateFormat = watch("dateFormat");
 
-  const onSubmit = (data: SettingsFormValues) => {
+  const onSubmit = () => {
     toast.success("Settings saved");
   };
 
