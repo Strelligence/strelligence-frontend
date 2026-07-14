@@ -97,14 +97,14 @@ export default function TransactionsPage() {
     toDate !== "" ||
     search !== "";
 
-  const SortIcon = ({ field }: { field: string }) => {
+  function renderSortIcon(field: string) {
     if (sort !== field) return <ArrowUpDown className="size-3 opacity-50" />;
     return order === "asc" ? (
       <ArrowUp className="size-3 text-primary" />
     ) : (
       <ArrowDown className="size-3 text-primary" />
     );
-  };
+  }
 
   return (
     <div className="space-y-4">
@@ -196,7 +196,7 @@ export default function TransactionsPage() {
                 onClick={() => toggleSort("date")}
               >
                 <span className="flex items-center gap-1">
-                  Date <SortIcon field="date" />
+                  Date {renderSortIcon("date")}
                 </span>
               </TableHead>
               <TableHead>Hash</TableHead>
@@ -205,7 +205,7 @@ export default function TransactionsPage() {
                 onClick={() => toggleSort("type")}
               >
                 <span className="flex items-center gap-1">
-                  Type <SortIcon field="type" />
+                  Type {renderSortIcon("type")}
                 </span>
               </TableHead>
               <TableHead
@@ -213,7 +213,7 @@ export default function TransactionsPage() {
                 onClick={() => toggleSort("amount")}
               >
                 <span className="flex items-center gap-1">
-                  Amount <SortIcon field="amount" />
+                  Amount {renderSortIcon("amount")}
                 </span>
               </TableHead>
               <TableHead>Asset</TableHead>
